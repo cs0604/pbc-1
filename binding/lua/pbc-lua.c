@@ -117,7 +117,6 @@ _rmessage_int64(lua_State *L) {
 	int index = luaL_checkinteger(L,3);
 	uint32_t v[2];
 	v[0] = pbc_rmessage_integer(m, key, index, &v[1]);
-
 	lua_pushlstring(L,(const char *)v,sizeof(v));
 
 	return 1;
@@ -324,10 +323,24 @@ static int
 _wmessage_int52(lua_State *L) {
 	struct pbc_wmessage * m = checkuserdata(L,1);
 	const char * key = luaL_checkstring(L,2);
-	int64_t number = (int64_t)(luaL_checknumber(L,3));
-	uint32_t hi = (uint32_t)(number >> 32);
-	pbc_wmessage_integer(m, key, (uint32_t)number, hi);
-
+	switch (lua_type(L,3)) {
+		case LUA_TSTRING : {
+			size_t len = 0;
+			const char * number = lua_tolstring(L,3,&len);
+			if (len !=8 ) {
+				return luaL_error(L,"Need an 8 length string for int64");
+			}
+			const uint32_t * v = (const uint32_t *) number;
+			pbc_wmessage_integer(m, key, v[0] , v[1]);
+			//printf("v[0]=%d,v[1]=%d\n",v[0],v[1]);
+			break;
+		}
+		default:{
+			int64_t number = (int64_t)(luaL_checknumber(L,3));
+			uint32_t hi = (uint32_t)(number >> 32);
+			pbc_wmessage_integer(m, key, (uint32_t)number, hi);
+		}
+	}
 	return 0;
 }
 
@@ -335,14 +348,28 @@ static int
 _wmessage_uint52(lua_State *L) {
 	struct pbc_wmessage * m = checkuserdata(L,1);
 	const char * key = luaL_checkstring(L,2);
-	lua_Number v = (luaL_checknumber(L,3));
-	if (v < 0) {
-		return luaL_error(L, "negative number : %f passed to unsigned field",v);
+	switch (lua_type(L,3)) {
+	case LUA_TSTRING : {
+		size_t len = 0;
+		const char * number = lua_tolstring(L,3,&len);
+		if (len !=8 ) {
+			return luaL_error(L,"Need an 8 length string for int64");
+		}
+		const uint32_t * v = (const uint32_t *) number;
+		//printf("v[0]=%d,v[1]=%d\n",v[0],v[1]);
+		pbc_wmessage_integer(m, key, v[0] , v[1]);
+		break;
 	}
-	uint64_t number = (uint64_t)v;
-	uint32_t hi = (uint32_t)(number >> 32);
-	pbc_wmessage_integer(m, key, (uint32_t)number, hi);
-
+	default:{
+		lua_Number v = (luaL_checknumber(L,3));
+		if (v < 0) {
+			return luaL_error(L, "negative number : %f passed to unsigned field",v);
+		}
+		uint64_t number = (uint64_t)v;
+		uint32_t hi = (uint32_t)(number >> 32);
+		pbc_wmessage_integer(m, key, (uint32_t)number, hi);
+	}
+	}
 	return 0;
 }
 
@@ -874,6 +901,7 @@ push_value(lua_State *L, int type, const char * typename, union pbc_value *v) {
 		lua_pushvalue(L, -3);
 		lua_pushstring(L, typename);
 		lua_pushlstring(L, (const char *)v->s.buffer , v->s.len);
+		//printf("call %s,%s\n",typename,(const char*)v->s.buffer);
 		lua_call(L, 2 , 1);
 		break;
 	case PBC_FIXED64:
@@ -885,11 +913,13 @@ push_value(lua_State *L, int type, const char * typename, union pbc_value *v) {
 	case PBC_INT64: {
 		uint64_t v64 = (uint64_t)(v->i.hi) << 32 | (uint64_t)(v->i.low);
 		lua_pushnumber(L,(lua_Number)(int64_t)v64);
+		//lua_pushlstring(L, (const char *)&(v->i), 8);
 		break;
 	}
 	case PBC_UINT: {
 		uint64_t v64 = (uint64_t)(v->i.hi) << 32 | (uint64_t)(v->i.low);
 		lua_pushnumber(L,(lua_Number)v64);
+		//lua_pushlstring(L, (const char *)&(v->i), 8);
 		break;
 	}
 	default:
@@ -906,10 +936,35 @@ push_value(lua_State *L, int type, const char * typename, union pbc_value *v) {
 static void
 decode_cb(void *ud, int type, const char * typename, union pbc_value *v, int id, const char *key) {
 	lua_State *L = ud;
+	//printf("typename:%s,id=%d,key=%s\n",typename,id,key);
 	if (key == NULL) {
 		// undefined field
 		return;
 	}
+	
+//	printf("luatype -1:%s\n",lua_typename(L,lua_type(L,-1)));
+//	printf("luatype -2:%s\n",lua_typename(L,lua_type(L,-2)));
+	
+	// set _bitField 
+	lua_pushstring(L,"_bitField");
+	lua_rawget(L,-3);
+	
+	int _bitField = lua_tointeger(L,-1);
+	
+	lua_pop(L,1);
+
+	//printf("_bitField:%d\n",_bitField);
+	
+	_bitField |= (1<<(id-1));
+
+	//printf("_bitField:%d\n",_bitField);
+
+	lua_pushstring(L,"_bitField");
+	lua_pushinteger(L,_bitField);
+	lua_rawset(L,-4);
+
+	
+
 	if (type & PBC_REPEATED) {
 		push_value(L, type & ~PBC_REPEATED, typename, v);
 		new_array(L, id , key);	// func.decode table.key table.id value array
@@ -921,6 +976,7 @@ decode_cb(void *ud, int type, const char * typename, union pbc_value *v, int id,
 		push_value(L, type, typename, v);
 		lua_setfield(L, -3 , key);
 	}
+
 }
 
 /*

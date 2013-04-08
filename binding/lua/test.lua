@@ -1,4 +1,4 @@
-require "protobuf"
+local protobuf=require "xuyun.protobuf"
 
 addr = io.open("../../build/addressbook.pb","rb")
 buffer = addr:read "*a"
@@ -41,6 +41,8 @@ for _,v in ipairs(decode.phone) do
 	print("\t"..v.number, v.type)
 end
 
+--[[
 phonebuf = protobuf.pack("tutorial.Person.PhoneNumber number","87654321")
 buffer = protobuf.pack("tutorial.Person name id phone", "Alice", 123, { phonebuf })
 print(protobuf.unpack("tutorial.Person name id phone", buffer))
+--]]

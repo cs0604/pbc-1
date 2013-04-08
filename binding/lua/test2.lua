@@ -1,4 +1,4 @@
-local protobuf = require "protobuf"
+local protobuf = require "xuyun.protobuf"
 
 addr = io.open("../../build/addressbook.pb","rb")
 buffer = addr:read "*a"
@@ -16,6 +16,8 @@ local person = {
 
 local buffer = protobuf.encode("tutorial.Person", person)
 
+print(string.len(buffer))
+
 local t = protobuf.decode("tutorial.Person", buffer)
 
 for k,v in pairs(t) do
@@ -24,7 +26,7 @@ for k,v in pairs(t) do
 	end
 end
 
-print(t.phone[2].type)
+print(t.phone[2].number)
 
 for k,v in pairs(t.phone[1]) do
 	print(k,v)
