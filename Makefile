@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2
+CFLAGS = -O2 -fPIC
 AR = ar rc
 
 BUILD = build
@@ -14,7 +14,7 @@ PROTOSRCS = addressbook.proto descriptor.proto float.proto test.proto
 
 BUILD_O = $(BUILD)/o
 
-all : lib test
+all : lib test lua
 
 lib : $(LIBNAME)
 
@@ -43,7 +43,7 @@ define BUILD_temp
   $$(TAR).o : | $(BUILD_O)
   -include $$(TAR).d
   $$(TAR).o : src/$(1)
-	$(CC) $(CFLAGS) -c -Isrc -I. -o $$@ -MMD $$<
+	$(CC) $(CFLAGS) -c -Isrc  -I. -o $$@ -MMD $$<
 endef
 
 $(foreach s,$(LIBSRCS),$(eval $(call BUILD_temp,$(s))))
@@ -59,7 +59,7 @@ define TEST_temp
   $$(TAR) : | $(BUILD)
   $$(TAR) : $(LIBNAME)
   $$(TAR) : test/$(1) 
-	cd $(BUILD) && $(CC) $(CFLAGS) -I.. -L. -o $$(notdir $$@) ../$$< -lpbc
+	cd $(BUILD) && $(CC) $(CFLAGS) -I.. -I../src -L. -o $$(notdir $$@) ../$$< -lpbc
 endef
 
 $(foreach s,$(TESTSRCS),$(eval $(call TEST_temp,$(s))))
@@ -79,6 +79,16 @@ endef
 $(foreach s,$(PROTOSRCS),$(eval $(call PROTO_temp,$(s))))
 
 proto : $(PROTO)
+
+lua :
+	cd binding/lua && make
+
+copy :
+	cp -f binding/lua/protobuf.so /usr/local/nginx/lua/clib/
+	cp -f binding/lua/xuyun/protobuf.lua /usr/local/nginx/lua/lib/common/
+
+restart :
+	/usr/local/nginx/sbin/nginx -s reload
 
 .PHONY : all lib test proto clean
 

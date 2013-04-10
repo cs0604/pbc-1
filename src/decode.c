@@ -79,6 +79,7 @@ call_type(pbc_decoder pd, void * ud, struct _field *f, struct atom *a, uint8_t *
 		CHECK_VARINT(a, -1);
 		v.i.low = a->v.i.low;
 		v.i.hi = a->v.i.hi;
+		//printf("low=%d,hi=%d\n",v.i.low,v.i.hi);
 		break;
 	case PTYPE_FIXED64:
 	case PTYPE_SFIXED64:

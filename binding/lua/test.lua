@@ -22,6 +22,9 @@ for _,v in ipairs(message) do
 	end
 end
 
+
+
+--[[
 addressbook = {
 	name = "Alice",
 	id = 12345,
@@ -40,7 +43,9 @@ print(decode.id)
 for _,v in ipairs(decode.phone) do
 	print("\t"..v.number, v.type)
 end
-
+--]]
+--
+--
 --[[
 phonebuf = protobuf.pack("tutorial.Person.PhoneNumber number","87654321")
 buffer = protobuf.pack("tutorial.Person name id phone", "Alice", 123, { phonebuf })

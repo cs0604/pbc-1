@@ -504,7 +504,8 @@ end
 
 function decode(typename, buffer, length)
 	local ret = {}
-	local ok = c._decode(P, decode_message_cb , ret , typename, buffer, length)
+	--local ok = c._decode(P, decode_message_cb , ret , typename, buffer, length)
+	local ok = c._decode(P, decode , ret , typename, buffer, length)
 	
 
 

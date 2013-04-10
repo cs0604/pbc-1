@@ -53,6 +53,8 @@ test_rmessage(struct pbc_env *env, struct pbc_slice *slice) {
 	printf("name = %s\n", pbc_rmessage_string(m , "name" , 0 , NULL));
 	printf("id = %d\n", pbc_rmessage_integer(m , "id" , 0 , NULL));
 	printf("email = %s\n", pbc_rmessage_string(m , "email" , 0 , NULL));
+	printf("testop = %d\n", pbc_rmessage_integer(m , "testop" , 0 , NULL));
+	printf("testop2 = %d\n", pbc_rmessage_integer(m , "testop2" , 0 , NULL));
 
 	int phone_n = pbc_rmessage_size(m, "phone");
 	int i;
@@ -83,14 +85,16 @@ test_wmessage(struct pbc_env * env)
 
 	pbc_wmessage_string(msg, "name", "Alice", -1);
 	pbc_wmessage_integer(msg, "id" , 12345, 0);
-	pbc_wmessage_string(msg, "email", "alice@unkown", -1);
+	pbc_wmessage_integer(msg, "testop" , 1, 0);
+	pbc_wmessage_integer(msg, "testop2" , 0, 0);
+	//pbc_wmessage_string(msg, "email", "alice@unkown", -1);
 
 	struct pbc_wmessage * phone = pbc_wmessage_message(msg , "phone");
 	pbc_wmessage_string(phone , "number", "87654321" , -1);
 
 	phone = pbc_wmessage_message(msg , "phone");
 	pbc_wmessage_string(phone , "number", "13901234567" , -1);
-	pbc_wmessage_string(phone , "type" , "MOBILE" , 0);
+	pbc_wmessage_string(phone , "type" , "HOME" , 0);
 
 	pbc_wmessage_integer(msg, "test", -123,0);
 	pbc_wmessage_integer(msg, "test", 12345,0);

@@ -28,6 +28,8 @@ wiretype_decode(uint8_t *buffer, int cap , struct atom *a , int start)
 	}
 
 	int wiretype = r.low & 7;
+	
+
 	a->wire_id = r.low;
 	buffer += len;
 	start += len;

@@ -58,35 +58,12 @@ local bin=protobuf.encode("Person",person)
 
 print("encode len:",#bin)
 
-
-local msg2=protobuf.decode("Person",bin)
-
-print("decode:")
-
---printTable(msg2)
-
-print(msg2.name)
-
-print(msg2.phone[1].number)
-
-bin=protobuf.encode("Person",{name="1"})
-
-msg2=protobuf.decode("Person",bin)
+local file=io.open("encode.bin","wb")
+file:write(bin)
+file:close()
 
 
 
-
---print(#msg2.phone)
-
---[[
-local bit= require("bit")
-print(msg2._bitField)
-print(bit.band(msg2._bitField , 0x1) == 0x1)
-print(bit.band(msg2._bitField , 0x2) == 0x2)
-print(bit.band(msg2._bitField , 0x4) == 0x4)
-print(bit.band(msg2._bitField , 0x8) == 0x8)
-print(bit.band(msg2._bitField , 0x10) == 0x10)
---]]
 local t2 = os.clock()
 
 --print(t2-t1)

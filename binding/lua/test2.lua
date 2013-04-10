@@ -1,3 +1,8 @@
+package.path = package.path .. ";/search/xuyun/lua/pbc/binding/lua/?.lua;"
+package.cpath = package.cpath .. ";/usr/local/nginx/lua/clib/?.so;"
+
+local cjson = require("cjson")
+
 local protobuf = require "xuyun.protobuf"
 
 addr = io.open("../../build/addressbook.pb","rb")
@@ -20,15 +25,5 @@ print(string.len(buffer))
 
 local t = protobuf.decode("tutorial.Person", buffer)
 
-for k,v in pairs(t) do
-	if type(k) == "string" then
-		print(k,v)
-	end
-end
 
-print(t.phone[2].number)
-
-for k,v in pairs(t.phone[1]) do
-	print(k,v)
-end
-
+print(cjson.encode(t))

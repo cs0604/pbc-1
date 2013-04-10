@@ -15,6 +15,7 @@ struct pbc_rmessage {
 		struct heap * heap;
 };
 
+
 union _var {
 	pbc_var var;
 	pbc_array array;
@@ -25,6 +26,8 @@ struct value {
 	struct _field * type;
 	union _var v;
 };
+
+
 
 int 
 pbc_rmessage_next(struct pbc_rmessage *m, const char **key) {
@@ -262,7 +265,6 @@ _pbc_rmessage_new(struct pbc_rmessage * ret , struct _message * type , void *buf
 	ret->msg = type;
 	ret->index = _pbcM_sp_new(count, h);
 	ret->heap = h;
-
 	int i;
 
 	for (i=0;i<ctx->number;i++) {
@@ -331,15 +333,22 @@ void
 pbc_rmessage_delete(struct pbc_rmessage * m) {
 	if (m) {
 		_pbcH_delete(m->heap);
+
 	}
 }
 
 const char * 
 pbc_rmessage_string(struct pbc_rmessage * m , const char *key , int index, int *sz) {
 	struct value * v = _pbcM_sp_query(m->index,key);
+	//struct _field * f = _pbcM_sp_query(m->type->name,key);
+	
+	//printf("key=%s,index=%d\n",key,index);
+	
+
 	int type = 0;
 	pbc_var var;
 	if (v == NULL) {
+		//printf("v==NULL key=%s index=%d  \n",key,index);
 		type = _pbcP_message_default(m->msg, key, var);
 	} else {
 		if (v->type->label == LABEL_REPEATED || v->type->label == LABEL_PACKED) {
@@ -370,6 +379,7 @@ pbc_rmessage_string(struct pbc_rmessage * m , const char *key , int index, int *
 uint32_t 
 pbc_rmessage_integer(struct pbc_rmessage *m , const char *key , int index, uint32_t *hi) {
 	struct value * v = _pbcM_sp_query(m->index,key);
+	
 	pbc_var var;
 	int type = 0;
 	if (v == NULL) {
@@ -399,6 +409,7 @@ pbc_rmessage_integer(struct pbc_rmessage *m , const char *key , int index, uint3
 double 
 pbc_rmessage_real(struct pbc_rmessage * m, const char *key , int index) {
 	struct value * v = _pbcM_sp_query(m->index,key);
+
 	pbc_var var;
 	if (v == NULL) {
 		_pbcP_message_default(m->msg, key, var);
@@ -416,6 +427,8 @@ pbc_rmessage_real(struct pbc_rmessage * m, const char *key , int index) {
 struct pbc_rmessage * 
 pbc_rmessage_message(struct pbc_rmessage * rm, const char *key, int index) {
 	struct value * v = _pbcM_sp_query(rm->index,key);
+	
+	
 	if (v == NULL) {
 		struct _field * f = _pbcM_sp_query(rm->msg->name, key);
 		if (f == NULL) {
@@ -444,6 +457,7 @@ pbc_rmessage_message(struct pbc_rmessage * rm, const char *key, int index) {
 int 
 pbc_rmessage_size(struct pbc_rmessage *m, const char *key) {
 	struct value * v = _pbcM_sp_query(m->index,key);
+	
 	if (v == NULL) {
 		return 0;
 	}

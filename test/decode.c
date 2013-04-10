@@ -22,7 +22,7 @@ read_file (const char *filename , struct pbc_slice *slice) {
 
 static void
 decode_all(void *ud , int type, const char * typename , union pbc_value *v, int id, const char *key) {
-	printf("%s : ", key ) ;
+	printf("%s = ", key ) ;
 	switch(type & ~PBC_REPEATED) {
 	case PBC_MESSAGE:
 		printf("[%s]  -> \n" , typename);
@@ -85,12 +85,29 @@ test_decode(struct pbc_env * env , const char * pb)
 	free(slice.buffer);
 }
 
+void 
+test_decode2(struct pbc_env * env, const char *pb, const char *typename, const char * encodefile)
+{
+	struct pbc_slice slice,encode;
+	read_file(pb,&slice);
+	read_file(encodefile,&encode);
+
+	int ret = pbc_register(env,&slice);
+	printf("register %d\n",ret);
+
+	pbc_decode(env,typename,&encode,decode_all,env);
+}
+
+
+
 int
 main(int argc, char *argv[])
 {
 	struct pbc_env * env = pbc_new();
 
-	test_decode(env,argv[1]);
+	//test_decode(env,argv[1]);
+	
+	test_decode2(env,argv[1],argv[2],argv[3]);
 
 	pbc_delete(env);
 

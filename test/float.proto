@@ -1,4 +1,5 @@
 message real {
 	optional float f = 1;
 	optional double d = 2;
+	optional int64 e =3;
 }

@@ -48,6 +48,7 @@ test_rmessage(struct pbc_env *env, struct pbc_slice *slice) {
 	struct pbc_rmessage * m = pbc_rmessage_new(env, "real", slice);
 	printf("f = %f\n", pbc_rmessage_real(m , "f" , 0 ));
 	printf("d = %f\n", pbc_rmessage_real(m , "d" , 0 ));
+	printf("e = %ld\n", pbc_rmessage_integer(m , "e" , 0,NULL ));
 	pbc_rmessage_delete(m);
 }
 
@@ -56,8 +57,12 @@ test_wmessage(struct pbc_env * env)
 {
 	struct pbc_wmessage * msg = pbc_wmessage_new(env, "real");
 
+
 	pbc_wmessage_real(msg, "f", 1.0);
 	pbc_wmessage_real(msg, "d" , 4.0);
+
+	//pbc_wmessage_integer(msg,"e",4294967295,9223372032559808512);
+
 
 	return msg;
 }

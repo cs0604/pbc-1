@@ -7,6 +7,7 @@
 inline int
 _pbcV_encode32(uint32_t number, uint8_t buffer[10])
 {
+	//printf("number=%d\n",number);
 	if (number < 0x80) {
 		buffer[0] = (uint8_t) number ; 
 		return 1;
@@ -66,10 +67,18 @@ _pbcV_decode(uint8_t buffer[10], struct longlong *result) {
 	}
 	uint64_t lr = 0;
 	for (i=4;i<10;i++) {
-		lr |= ((buffer[i] & 0x7f) << (7*(i-4)));
+		//printf("buffer[i]=%d\,i=%d,%d\n",buffer[i],i,7*(i-4));
+		//printf("lr=%lu\n",lr);
+		uint64_t tmp=(buffer[i] & 0x7f);
+		tmp=tmp<<(7*(i-4));
+		//printf("tor1=%lu\n",tmp);
+		//printf("tor2=%lu\n",lr|tmp);
+		lr |= tmp;
 		if (!(buffer[i] & 0x80)) {
 			result->hi = (uint32_t)(lr >> 4);
+
 			result->low = r | (((uint32_t)lr & 0xf) << 28);
+			//printf("hi=%d,low=%d\n",result->hi,result->low);
 			return i+1;
 		}
 	}

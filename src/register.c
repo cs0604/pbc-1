@@ -248,8 +248,9 @@ _register(struct pbc_env *p, struct pbc_rmessage * file, struct _stringpool *poo
 static int
 _check_file_name(struct pbc_env * p , struct pbc_rmessage * file, const char ** fname) {
 	const char * filename = pbc_rmessage_string(file, "name", 0, NULL);
-//	printf("reg :%s\n",filename);
+	//printf("reg :%s\n",filename);
 	if (_pbcM_sp_query(p->files, filename)) {
+		//printf("%s exist\n",filename);
 		return CHECK_FILE_EXIST;
 	}
 	int sz = pbc_rmessage_size(file, "dependency"); 
@@ -315,6 +316,7 @@ pbc_register(struct pbc_env * p, struct pbc_slice *slice) {
 			p->lasterror = "register open fail";
 			goto _error;
 		}
+		
 	}
 
 	int r = n;

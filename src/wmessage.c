@@ -131,6 +131,7 @@ int32_encode(uint32_t low, uint8_t * buffer) {
 
 int 
 pbc_wmessage_integer(struct pbc_wmessage *m, const char *key, uint32_t low, uint32_t hi) {
+	//printf("step1: %s,%d,%d\n",key,low,hi);
 	struct _field * f = _pbcM_sp_query(m->type->name,key);
 	if (f==NULL) {
 		// todo : error
@@ -141,6 +142,7 @@ pbc_wmessage_integer(struct pbc_wmessage *m, const char *key, uint32_t low, uint
 		_packed_integer(m , f, key , low, hi);
 		return 0;		
 	}
+	/*
 	if (f->label == LABEL_OPTIONAL) {
 		if (f->type == PTYPE_ENUM) {
 			if (low == f->default_v->e.id)
@@ -148,20 +150,27 @@ pbc_wmessage_integer(struct pbc_wmessage *m, const char *key, uint32_t low, uint
 		} else {
 			if (low == f->default_v->integer.low &&
 				hi == f->default_v->integer.hi) {
+				printf("low=%d,f->default_v->integer.low=%d,hi=%d,f->default_v->integer.hi=%d\n",low, f->default_v->integer.low, hi, f->default_v->integer.hi);
 				return 0;
 			}
 		}
 	}
+	*/
+	//printf("step2: %s,%d,%d\n",key,low,hi);
 	int id = f->id << 3;
-
 	_expand(m,20);
 	switch (f->type) {
 	case PTYPE_INT64:
 	case PTYPE_UINT64: 
 	case PTYPE_INT32:
 		id |= WT_VARINT;
-		m->ptr += _pbcV_encode32(id, m->ptr);
-		m->ptr += _pbcV_encode((uint64_t)low | (uint64_t)hi << 32 , m->ptr);
+		//printf("id=%d\n",id);
+		int xt = _pbcV_encode32(id,m->ptr);
+		m->ptr += xt;
+		int yt =  _pbcV_encode((uint64_t)low | (uint64_t)hi << 32 , m->ptr);
+		//printf("xt=%d,yt=%d\n",xt,yt);
+		m->ptr += yt;
+		//printf("step3 over\n");
 		break;
 	case PTYPE_UINT32:
 	case PTYPE_ENUM:
@@ -211,11 +220,12 @@ pbc_wmessage_real(struct pbc_wmessage *m, const char *key, double v) {
 		_packed_real(m , f, key , v);
 		return 0;		
 	}
-
+/*
 	if (f->label == LABEL_OPTIONAL) {
 		if (v == f->default_v->real)
 			return 0;
 	}
+*/
 	int id = f->id << 3;
 	_expand(m,18);
 	switch (f->type) {
@@ -270,9 +280,11 @@ pbc_wmessage_string(struct pbc_wmessage *m, const char *key, const char * v, int
 			}
 			_packed_integer(m , f, key , enum_id , 0);
 		}
+		//printf("hi 1,%s,%s\n",key,v);
 		return 0;	
 	}
 
+	/*
 	if (f->label == LABEL_OPTIONAL) {
 		if (f->type == PTYPE_ENUM) {
 			if (strncmp(v , f->default_v->e.name, len) == 0 && f->default_v->e.name[len] =='\0') {
@@ -285,6 +297,10 @@ pbc_wmessage_string(struct pbc_wmessage *m, const char *key, const char * v, int
 			}
 		}
 	}
+	*/
+
+	//printf("hi 2,%s,%s\n",key,v);
+
 	int id = f->id << 3;
 	_expand(m,20);
 	switch (f->type) {
@@ -302,6 +318,8 @@ pbc_wmessage_string(struct pbc_wmessage *m, const char *key, const char * v, int
 			m->type->env->lasterror = "wmessage_string invalid enum";
 			return -1;
 		}
+		
+		//printf("hi 3,%s,%s\n",key,v);
 		id |= WT_VARINT;
 		m->ptr += _pbcV_encode32(id, m->ptr);
 		m->ptr += _pbcV_encode32(enum_id, m->ptr);
